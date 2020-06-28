@@ -1,0 +1,29 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: ${{ matrix.os }}-hosted-basic
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install CMake
+        uses: lukka/get-cmake@v3.17.3
+
+      - name: Run CMake
+        uses: lukka/run-cmake@v2
+
+      - name: Run Tests
+        run: ctest --output-on-failure
