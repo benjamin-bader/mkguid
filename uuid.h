@@ -14,13 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
+#pragma once
 
-#include "uuid.h"
+#include <cstdint>
+#include <iosfwd>
 
-int main()
+class Uuid
 {
-  Uuid uuid;
-  std::cout << uuid << "\n";
-  return 0;
-}
+  std::uint64_t m_hi;
+  std::uint64_t m_lo;
+
+  friend std::ostream& operator<<(std::ostream& os, const Uuid& uuid);
+
+public:
+  Uuid();
+  Uuid(std::uint64_t hi, std::uint64_t lo);
+
+  std::uint64_t hi() const
+  {
+    return m_hi;
+  }
+
+  std::uint64_t lo() const
+  {
+    return m_lo;
+  }
+};
+
+std::ostream& operator<<(std::ostream& os, const Uuid& uuid);
