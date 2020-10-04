@@ -42,3 +42,10 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Uuid& uuid);
+
+namespace UuidFormat {
+
+std::ostream& Standard(std::ostream&);
+std::ostream& Com(std::ostream&);
+
+}

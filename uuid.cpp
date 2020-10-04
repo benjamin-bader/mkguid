@@ -23,6 +23,26 @@ using namespace std;
 
 namespace {
 
+static int g_uuidFormatFlag = ios_base::xalloc();
+
+enum class Fmt
+{
+  Standard = 0,
+  Com = 1,
+};
+
+void SetFormat(ostream& os, Fmt fmt)
+{
+  os.iword(g_uuidFormatFlag) = static_cast<long>(fmt);
+}
+
+Fmt GetAndClearFormat(ostream& os)
+{
+  Fmt result = static_cast<Fmt>(os.iword(g_uuidFormatFlag));
+  SetFormat(os, Fmt::Standard);
+  return result;
+}
+
 constexpr const char* const kHexAlphabet = "0123456789abcdef";
 constexpr const uint64_t kVariantFlag = 0x8000000080000000UL;
 constexpr const uint64_t kVariantMask = 0x3FFFFFFFFFFFFFFFUL;
@@ -59,6 +79,13 @@ Uuid::Uuid(uint64_t hi, uint64_t lo)
 
 ostream& operator<<(ostream& os, const Uuid& uuid)
 {
+  Fmt fmt = GetAndClearFormat(os);
+
+  if (fmt == Fmt::Com)
+  {
+    os << "{";
+  }
+
   print_bytes(4, os, uuid.m_hi >> 32);
   os << "-";
   print_bytes(2, os, uuid.m_hi >> 16);
@@ -68,5 +95,27 @@ ostream& operator<<(ostream& os, const Uuid& uuid)
   print_bytes(2, os, uuid.m_lo >> 48);
   os << "-";
   print_bytes(6, os, uuid.m_lo);
+
+  if (fmt == Fmt::Com)
+  {
+    os << "}";
+  }
+
   return os;
+}
+
+namespace UuidFormat {
+
+ostream& Standard(ostream& os)
+{
+  SetFormat(os, Fmt::Standard);
+  return os;
+}
+
+ostream& Com(ostream& os)
+{
+  SetFormat(os, Fmt::Com);
+  return os;
+}
+
 }
