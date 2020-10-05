@@ -29,11 +29,11 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{ runner.workspace }}/build
-        run: cmake -S ${{ runner.workspace }} -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
+        run: cmake -S $GITHUB_WORKSPACE -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
 
       - name: Run CMake Build
         working-directory: ${{ runner.workspace }}/build
-        run: cmake --build ${{ runner.workspace }}
+        run: cmake --build $GITHUB_WORKSPACE
 
       - name: Run Tests
         working-directory: ${{ runner.workspace }}/build
