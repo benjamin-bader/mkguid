@@ -18,7 +18,7 @@ jobs:
           - os: ubuntu-latest
             cmakeArgs: -G "Unix Makefiles"
           - os: windows-latest
-            cmakeArgs: -G "NMake Makefiles"
+            cmakeArgs: -G "Visual Studio 16 2019"
 
 
     steps:
