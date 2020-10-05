@@ -28,12 +28,13 @@ jobs:
         run: cmake -E make_directory "${{ runner.workspace }}/build"
 
       - name: Configure CMake
-        working_directory: ${{ runner.workspace }}/build
+        working-directory: ${{ runner.workspace }}/build
         run: cmake -S ${{ runner.workspace }} -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
 
       - name: Run CMake Build
-        working_directory: ${{ runner.workspace }}/build
+        working-directory: ${{ runner.workspace }}/build
         run: cmake --build ${{ runner.workspace }}
 
       - name: Run Tests
+        working-directory: ${{ runner.workspace }}/build
         run: ctest --output-on-failure
