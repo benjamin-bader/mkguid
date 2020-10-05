@@ -14,16 +14,33 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            cmakeArgs: -G "Unix Makefiles"
+          - os: windows-latest
+            cmakeArgs: -G "Visual Studio 16 2019"
 
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install CMake
-        uses: lukka/get-cmake@v3.17.3
+      - name: Create build directory
+        run: cmake -E make_directory "${{ runner.workspace }}/build"
 
-      - name: Run CMake
-        uses: lukka/run-cmake@v2
+      - name: Configure CMake (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: ${{ runner.workspace }}/build
+        run: cmake -S $GITHUB_WORKSPACE -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
+
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ runner.workspace }}/build
+        run: cmake -S ${env:GITHUB_WORKSPACE} -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
+
+      - name: Run CMake Build
+        working-directory: ${{ runner.workspace }}/build
+        run: cmake --build .
 
       - name: Run Tests
+        working-directory: ${{ runner.workspace }}/build
         run: ctest --output-on-failure
