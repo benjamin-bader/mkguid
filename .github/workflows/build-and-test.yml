@@ -18,7 +18,7 @@ jobs:
           - os: ubuntu-latest
             cmakeArgs: -GNinja
           - os: windows-latest
-            cmakeArgs: -G "NMake Makefiles"
+            cmakeArgs: -G "NMake Makefiles" -DCMAKE_CXX_COMPILER=msvc
 
 
     steps:
