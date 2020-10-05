@@ -28,13 +28,16 @@ jobs:
         run: cmake -E make_directory "${{ runner.workspace }}/build"
 
       - name: Configure CMake
+        shell: bash
         working-directory: ${{ runner.workspace }}/build
         run: cmake -S $GITHUB_WORKSPACE -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
 
       - name: Run CMake Build
+        shell: bash
         working-directory: ${{ runner.workspace }}/build
         run: cmake --build $GITHUB_WORKSPACE
 
       - name: Run Tests
+        shell: bash
         working-directory: ${{ runner.workspace }}/build
         run: ctest --output-on-failure
