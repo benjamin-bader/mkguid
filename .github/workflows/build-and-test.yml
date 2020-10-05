@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            cmakeArgs: -GNinja
+            cmakeArgs: -G Ninja
           - os: windows-latest
             cmakeArgs: -G "NMake Makefiles" -DCMAKE_CXX_COMPILER=msvc
 
@@ -24,13 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install CMake
-        uses: lukka/get-cmake@v3.17.3
+      - name: Create build directory
+        run: cmake -E make_directory "${{ runner.workspace }}/build"
 
-      - name: Run CMake
-        uses: lukka/run-cmake@v3
-        with:
-          cmakeAppendedArgs: '${{ matrix.cmakeArgs }}'
+      - name: Configure CMake
+        working_directory: ${{ runner.workspace }}/build
+        run: cmake -S ${{ runner.workspace }} -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
+
+      - name: Run CMake Build
+        working_directory: ${{ runner.workspace }}/build
+        run: cmake --build ${{ runner.workspace }}
 
       - name: Run Tests
         run: ctest --output-on-failure
