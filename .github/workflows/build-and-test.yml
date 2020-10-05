@@ -28,16 +28,25 @@ jobs:
         run: cmake -E make_directory "${{ runner.workspace }}/build"
 
       - name: Configure CMake
-        shell: bash
+        if: matrix.os == 'ubuntu-latest'
         working-directory: ${{ runner.workspace }}/build
         run: cmake -S $GITHUB_WORKSPACE -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
 
+      - name: Configure CMake
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ runner.workspace }}/build
+        run: cmake -S ${env:GITHUB_WORKSPACE} -B ${{ runner.workspace }}/build ${{ matrix.cmakeArgs }}
+
       - name: Run CMake Build
-        shell: bash
+        if: matrix.os == 'ubuntu-latest'
         working-directory: ${{ runner.workspace }}/build
         run: cmake --build $GITHUB_WORKSPACE
 
+      - name: Run CMake Build
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ runner.workspace }}/build
+        run: cmake --build ${env:GITHUB_WORKSPACE}
+
       - name: Run Tests
-        shell: bash
         working-directory: ${{ runner.workspace }}/build
         run: ctest --output-on-failure
