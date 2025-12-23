@@ -20,6 +20,6 @@
 
 int main()
 {
-  std::cout << UuidFormat::Standard << Uuid{} << "\n";
+  std::cout << UuidFormat::Standard << Uuid::v4() << "\n";
   return 0;
 }

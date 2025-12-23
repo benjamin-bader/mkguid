@@ -26,9 +26,21 @@ class Uuid
 
   friend std::ostream& operator<<(std::ostream& os, const Uuid& uuid);
 
+  Uuid(std::uint64_t hi, std::uint64_t lo)
+    : m_hi{hi}
+    , m_lo{lo}
+  {}
+
 public:
   Uuid();
-  Uuid(std::uint64_t hi, std::uint64_t lo);
+  Uuid(const Uuid&) = default;
+  Uuid(Uuid&&) = default;
+
+  static Uuid v4();
+  static Uuid v7();
+
+  Uuid& operator=(const Uuid&) = default;
+  Uuid& operator=(Uuid&&) = default;
 
   std::uint64_t hi() const
   {

@@ -16,6 +16,7 @@
 
 #include "uuid.h"
 
+#include <chrono>
 #include <iostream>
 #include <random>
 
@@ -25,7 +26,7 @@ namespace {
 
 static int g_uuidFormatFlag = ios_base::xalloc();
 
-enum class Fmt
+enum class Fmt : long
 {
   Standard = 0,
   Com = 1,
@@ -44,11 +45,17 @@ Fmt GetAndClearFormat(ostream& os)
 }
 
 constexpr const char* const kHexAlphabet = "0123456789abcdef";
-constexpr const uint64_t kVariantFlag = 0x8000000080000000UL;
+constexpr const uint64_t kVariantFlag = 0x8000000000000000UL;
 constexpr const uint64_t kVariantMask = 0x3FFFFFFFFFFFFFFFUL;
 
 constexpr const uint64_t kVersionFlag = 0x0000000000004000UL;
 constexpr const uint64_t kVersionMask = 0xFFFFFFFFFFFF0FFFUL;
+
+template <int N>
+constexpr uint64_t GetVersionFlag() {
+  static_assert(N >= 1 && N <= 8);
+  return static_cast<uint64_t>(N & 0xFF) << 12;
+}
 
 void print_bytes(int N, ostream& out, uint64_t n)
 {
@@ -63,24 +70,56 @@ void print_bytes(int N, ostream& out, uint64_t n)
 
 }
 
+Uuid Uuid::v4()
+{
+  return {};
+}
+
+Uuid Uuid::v7()
+{
+  /*
+    UUIDv7 bitwise layout from https://datatracker.ietf.org/doc/rfc9562/
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           unix_ts_ms                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |          unix_ts_ms           |  ver  |       rand_a          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |var|                        rand_b                             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                            rand_b                             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+  */
+  random_device dev;
+  mt19937_64 dist(dev());
+
+  auto now = chrono::system_clock::now();
+  auto epoch = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+
+  uint64_t hi = (epoch << 16) | (dist() & 0xFFFFULL);
+  uint64_t lo = dist();
+
+  hi = (hi & kVersionMask) | GetVersionFlag<7>();
+  lo = (lo & kVariantMask) | kVariantFlag;
+
+  return {hi, lo};
+}
+
 Uuid::Uuid()
 {
   random_device dev;
   mt19937_64 dist(dev());
-  m_hi = (dist() & kVersionMask) | kVersionFlag;
+  m_hi = (dist() & kVersionMask) | GetVersionFlag<4>();
   m_lo = (dist() & kVariantMask) | kVariantFlag;
-}
-
-Uuid::Uuid(uint64_t hi, uint64_t lo)
-{
-  m_hi = (hi & kVersionMask) | kVersionFlag;
-  m_lo = (lo & kVariantMask) | kVariantFlag;
 }
 
 ostream& operator<<(ostream& os, const Uuid& uuid)
 {
   Fmt fmt = GetAndClearFormat(os);
-
+ 
   if (fmt == Fmt::Com)
   {
     os << "{";
